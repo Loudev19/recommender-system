@@ -9,9 +9,9 @@ mod tests {
 }
 
 pub trait GenericController<U: User, I: Item> {
-	fn get_user_by_name(&self, name: &str) -> vec<U>;
-	fn get_item_by_name(&self, name: &str) -> vec<I>;
-	fn get_all_users(&self) -> vec<U>;
+	fn get_user_by_name(&self, name: &str) -> Vec<U>;
+	fn get_item_by_name(&self, name: &str) -> Vec<I>;
+	fn get_all_users(&self) -> Vec<U>;
 }
 
 pub trait Item {
