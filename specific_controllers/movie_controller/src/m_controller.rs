@@ -4,7 +4,6 @@ use diesel::pg::PgConnection; //Matiene la conexion
 use generic_controller::GenericController;
 
 use crate::models::{MUser, MItem};
-//use crate::models::{CreateUser, CreateMovie, CreateScore};
 use crate::models::{FoundUser, FoundMovie, FoundScore};
 
 use crate::schema::{users, movies, scores};

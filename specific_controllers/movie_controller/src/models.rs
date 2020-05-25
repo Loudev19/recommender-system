@@ -57,7 +57,8 @@ pub struct MItem {
     pub name: String,
 }
 
-impl User for MUser {
+impl User<MItem> for MUser {
+    type Id = i32;
 
     fn id(&self) -> i32{
         self.id
@@ -77,6 +78,8 @@ impl User for MUser {
 }
 
 impl Item for MItem {
+    type Id = i32;
+
     fn id(&self) -> i32{
         self.id
     }
