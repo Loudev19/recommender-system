@@ -25,5 +25,8 @@ mod tests {
 
         let movies = controller.get_item_by_id(5);
         println!("{:?}\n", movies);
+
+        let users = controller.get_all_users();
+        println!("{:?}\n", users);
     }
 }

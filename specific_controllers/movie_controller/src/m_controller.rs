@@ -100,7 +100,27 @@ impl GenericController<MUser, MItem> for MovieController {
     }
 
 	fn get_all_users(&self) -> Vec<MUser>{
-        todo!()
+        let results = users::table
+            .load::<FoundUser>(&self.conn)
+            .expect("Error searching all users");
+        
+        let mut found_users = Vec::new();
+
+        for fuser in &results {
+            let scores = scores::table.filter(scores::userid.eq(fuser.id))
+                .load::<FoundScore>(&self.conn)
+                .expect("Error searching scores");
+
+            let mut hash_scores = HashMap::new();
+
+            for score in &scores {
+                hash_scores.insert(score.movieid, score.score);
+            }
+
+            found_users.push(MUser{id: fuser.id, name: fuser.uname.clone(), score: hash_scores});
+        }
+
+        found_users
     }
 }
 
