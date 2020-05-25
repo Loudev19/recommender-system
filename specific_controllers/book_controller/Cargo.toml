@@ -1,0 +1,13 @@
+[package]
+name = "book_controller"
+version = "0.1.0"
+authors = ["Maria <mb.lev17@gmail.com>"]
+edition = "2018"
+workspace = "../.."
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+diesel = { version = "1.0.0", features = ["postgres"] }
+generic_controller = {version="*", path="../../generic_controller"}
+csv = "1.1"
