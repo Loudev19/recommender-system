@@ -3,12 +3,3 @@
 [[package]]
 name = "book_controller"
 version = "0.1.0"
-
-[[package]]
-name = "generic-controller"
-version = "0.1.0"
-
-[[package]]
-name = "recommendation-system"
-version = "0.1.0"
-

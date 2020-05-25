@@ -8,21 +8,23 @@ mod tests {
     }
 }
 
-pub trait GenericController<U: User, I: Item> {
+pub trait GenericController<U: User> {
+	fn connect_to(Url: &str) -> Self;
+
 	fn get_user_by_name(&self, name: &str) -> Vec<U>;
-	fn get_item_by_name(&self, name: &str) -> Vec<I>;
+	fn get_user_by_id(&self, uid: u64) -> Vec<U>;
 	fn get_all_users(&self) -> Vec<U>;
 }
 
-pub trait Item {
-	fn id(&self) -> u64;
+pub trait User {
+	fn id(&self) -> u32;
 	fn name(&self) -> String;
 	fn data(&self) -> HashMap<String, String>;
+	fn scores(&self) -> HashMap<u32, f64>; //pelicula id, score
 }
 
-pub trait User {
-	fn id(&self) -> u64;
+pub trait Item {
+	fn id(&self) -> i32;
 	fn name(&self) -> String;
-	fn data(&self) -> HashMap<String, String>;
-	fn scores(&self) -> HashMap<u64, f64>;
+	fn data(&self) -> HashMap<String, String>; //extra
 }
