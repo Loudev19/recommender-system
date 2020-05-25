@@ -24,14 +24,37 @@ impl GenericController<MUser, MItem> for MovieController {
     }
 
 	fn get_user_by_name(&self, name: &str) -> Vec<MUser>{
-        todo!()
+        let results = users::table.filter(users::uname.eq(name))
+            .load::<FoundUser>(&self.conn)
+            .expect("Error searching users by name");
+        if results.is_empty() {
+            return Vec::new();
+        }
+
+        let mut found_users = Vec::new();
+
+        for fuser in &results {
+            let scores = scores::table.filter(scores::userid.eq(fuser.id))
+                .load::<FoundScore>(&self.conn)
+                .expect("Error searching scores");
+
+            let mut hash_scores = HashMap::new();
+            
+            for score in &scores {
+                hash_scores.insert(score.movieid, score.score);
+            }
+
+            found_users.push(MUser{id: fuser.id, name: fuser.uname.clone(), score: hash_scores});
+        }
+
+        found_users
     }
 
 	fn get_user_by_id(&self, uid: i32) -> Vec<MUser>{
         let results = users::table.filter(users::id.eq(uid))
             .limit(1)
             .load::<FoundUser>(&self.conn)
-            .expect("Error loading users");
+            .expect("Error searching users by id");
         if results.is_empty() {
             return Vec::new();
         }

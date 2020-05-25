@@ -16,5 +16,8 @@ mod tests {
         let controller = MovieController::new();
         let users = controller.get_user_by_id(10);
         println!("{:?}\n", users);
+
+        let users = controller.get_user_by_name("Chris");
+        println!("{:?}\n", users);
     }
 }
