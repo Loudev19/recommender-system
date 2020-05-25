@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 pub trait GenericController<U: User> {
-	fn connect_to(url: &str) -> Self;
+	fn new() -> Self;
 
 	fn get_user_by_name(&self, name: &str) -> Vec<U>;
 	fn get_user_by_id(&self, uid: u64) -> Vec<U>;

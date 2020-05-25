@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
-use generic_controller::User;
-use generic_controller::Item;
+use generic_controller::{User, Item};
 
 #[derive(Debug)]
 pub struct MUser {
