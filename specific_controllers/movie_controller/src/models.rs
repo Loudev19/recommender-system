@@ -2,6 +2,28 @@ use std::collections::HashMap;
 
 use generic_controller::{User, Item};
 
+use crate::schema::*;
+
+#[derive(Insertable)]
+#[table_name="users"]
+pub struct CreateUser {
+    pub uname: String,
+}
+
+#[derive(Insertable)]
+#[table_name="movies"]
+pub struct CreateMovie {
+    pub title: String,
+}
+
+#[derive(Insertable)]
+#[table_name="scores"]
+pub struct CreateScore {
+    pub score: f64,
+    pub userid: i32,
+    pub movieid: i32
+}
+
 #[derive(Debug)]
 pub struct MUser {
     pub id: i32,

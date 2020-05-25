@@ -1,10 +1,12 @@
 use std::collections::HashMap;
 
-pub trait GenericController<U: User> {
+pub trait GenericController<U: User, I: Item> {
 	fn new() -> Self;
 
 	fn get_user_by_name(&self, name: &str) -> Vec<U>;
 	fn get_user_by_id(&self, uid: u64) -> Vec<U>;
+	fn get_item_by_name(&self, name: &str) -> Vec<I>;
+	fn get_item_by_id(&self, uid: i32) -> Vec<I>;
 	fn get_all_users(&self) -> Vec<U>;
 }
 
