@@ -4,7 +4,7 @@ use diesel::pg::PgConnection; //Matiene la conexion
 use generic_controller::GenericController;
 
 use crate::models::{MUser, MItem};
-use crate::models::{CreateUser, CreateMovie, CreateScore};
+//use crate::models::{CreateUser, CreateMovie, CreateScore};
 use crate::models::{FoundUser, FoundMovie, FoundScore};
 
 use crate::schema::{users, movies, scores};
@@ -39,7 +39,7 @@ impl GenericController<MUser, MItem> for MovieController {
                 .expect("Error searching scores");
 
             let mut hash_scores = HashMap::new();
-            
+
             for score in &scores {
                 hash_scores.insert(score.movieid, score.score);
             }
@@ -73,11 +73,30 @@ impl GenericController<MUser, MItem> for MovieController {
     }
 
     fn get_item_by_name(&self, name: &str) -> Vec<MItem>{
-        todo!()
+        let results = movies::table.filter(movies::title.eq(name))
+            .load::<FoundMovie>(&self.conn)
+            .expect("Error searching movie by title");
+        
+        let mut found_movies = Vec::new();
+
+        for movie in &results {
+            found_movies.push(MItem{id: movie.id, name: movie.title.clone()});        
+        }
+
+        found_movies
+
     }
 
 	fn get_item_by_id(&self, uid: i32) -> Vec<MItem>{
-        todo!()
+        let results = movies::table.filter(movies::id.eq(uid))
+            .load::<FoundMovie>(&self.conn)
+            .expect("Error searching movies by id");
+        
+        if results.is_empty() {
+            return Vec::new();
+        }
+
+        vec![MItem{id: uid, name: results[0].title.clone()}]
     }
 
 	fn get_all_users(&self) -> Vec<MUser>{

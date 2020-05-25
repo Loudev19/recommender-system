@@ -19,5 +19,11 @@ mod tests {
 
         let users = controller.get_user_by_name("Chris");
         println!("{:?}\n", users);
+
+        let movies = controller.get_item_by_name("Avatar");
+        println!("{:?}\n", movies);
+
+        let movies = controller.get_item_by_id(5);
+        println!("{:?}\n", movies);
     }
 }
