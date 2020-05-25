@@ -11,7 +11,7 @@ pub trait GenericController<U: User> {
 pub trait User {
 	fn id(&self) -> i32;
 	fn name(&self) -> String;
-	fn data(&self) -> HashMap<String, String>;
+	fn data(&self) -> HashMap<String, String>; //extra
 	fn scores(&self) -> HashMap<i32, f64>; //pelicula id, score
 }
 
