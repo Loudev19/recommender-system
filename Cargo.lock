@@ -5,6 +5,10 @@ name = "generic_controller"
 version = "0.1.0"
 
 [[package]]
+name = "movie_controller"
+version = "0.1.0"
+
+[[package]]
 name = "recommendation-system"
 version = "0.1.0"
 
