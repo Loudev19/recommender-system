@@ -4,6 +4,26 @@ use generic_controller::{User, Item};
 
 use crate::schema::*;
 
+#[derive(diesel::Queryable)]
+pub struct FoundUser {
+    pub id: i32,
+    pub uname: String,
+}
+
+#[derive(diesel::Queryable)]
+pub struct FoundMovie {
+    pub id: i32,
+    pub title: String,
+}
+
+#[derive(diesel::Queryable)]
+pub struct FoundScore {
+    pub id: i32,
+    pub userid: i32,
+    pub movieid: i32,
+    pub score: f64
+}
+
 #[derive(Insertable)]
 #[table_name="users"]
 pub struct CreateUser {
@@ -19,9 +39,9 @@ pub struct CreateMovie {
 #[derive(Insertable)]
 #[table_name="scores"]
 pub struct CreateScore {
-    pub score: f64,
     pub userid: i32,
-    pub movieid: i32
+    pub movieid: i32,
+    pub score: f64,
 }
 
 #[derive(Debug)]
