@@ -28,5 +28,8 @@ mod tests {
 
         let users = controller.get_all_users();
         println!("{:?}\n", users);
+
+        let scores = controller.get_all_scores();
+        println!("{:?}\n", scores);
     }
 }

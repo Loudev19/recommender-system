@@ -8,6 +8,7 @@ pub trait GenericController<U: User<I>, I: Item> {
 	fn get_item_by_name(&self, name: &str) -> Vec<I>;
 	fn get_item_by_id(&self, uid: I::Id) -> Vec<I>;
 	fn get_all_users(&self) -> Vec<U>;
+	fn get_all_scores(&self) -> HashMap<U::Id, HashMap<I::Id, f64> >;
 }
 
 pub trait User<I: Item> {

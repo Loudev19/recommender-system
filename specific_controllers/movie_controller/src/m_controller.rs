@@ -121,6 +121,24 @@ impl GenericController<MUser, MItem> for MovieController {
 
         found_users
     }
+
+    fn get_all_scores(&self) -> HashMap<i32, HashMap<i32, f64> > {
+        let results = scores::table
+            .load::<FoundScore>(&self.conn)
+            .expect("Failed to get all scores");
+
+        let mut users = HashMap::new();
+        for fscore in results {
+            if !users.contains_key(&fscore.userid){
+                users.insert(fscore.userid, HashMap::new());
+            }
+            let scores = users.get_mut(&fscore.userid)
+                .expect("Failed to get scores");
+            scores.insert(fscore.movieid.clone(), fscore.score);
+        }
+
+        users
+    }
 }
 
 
