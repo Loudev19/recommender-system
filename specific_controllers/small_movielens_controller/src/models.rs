@@ -7,7 +7,6 @@ use crate::schema::*;
 #[derive(diesel::Queryable)]
 pub struct FoundUser {
     pub id: i32,
-    pub uname: String,
 }
 
 #[derive(diesel::Queryable)]
@@ -48,19 +47,19 @@ pub struct CreateScore {
 }
 
 #[derive(Debug)]
-pub struct SBUser {
+pub struct SMUser {
     pub id: i32,
     pub score: HashMap<i32, f64>
 }
 
 #[derive(Debug)]
-pub struct SBItem {
+pub struct SMItem {
     pub id: i32,
     pub name: String,
     pub data: HashMap<String, String>,
 }
 
-impl User<SBItem> for SBUser {
+impl User<SMItem> for SMUser {
     type Id = i32;
 
     fn id(&self) -> i32{
@@ -80,7 +79,7 @@ impl User<SBItem> for SBUser {
     }
 }
 
-impl Item for SBItem {
+impl Item for SMItem {
     type Id = i32;
 
     fn id(&self) -> i32{
@@ -96,10 +95,10 @@ impl Item for SBItem {
     } //extra
 }
 
-impl SBItem {
-    pub fn new(id:i32, name: String, genres: String) -> SBItem{
+impl SMItem {
+    pub fn new(id:i32, name: String, genres: String) -> SMItem{
         let mut data = HashMap::new();
         data.insert(String::from("Genres"), genres);
-        SBItem{id: id, name: name, data: data}
+        SMItem{id: id, name: name, data: data}
     }
 }
