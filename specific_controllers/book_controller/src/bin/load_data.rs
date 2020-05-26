@@ -1,4 +1,3 @@
-use book_controller::models::{FoundUser, FoundScore, FoundBook};
 use book_controller::models::{CreateUser, CreateScore, CreateBook};
 use book_controller::schema::{users, books, scores};
 
