@@ -10,3 +10,7 @@ edition = "2018"
 members = ["generic_controller", "specific_controllers/*"]
 
 [dependencies]
+generic_controller = {version="*", path="./generic_controller"}
+movie_controller = {version="*", path="./specific_controllers/movie_controller"}
+book_controller = {version="*", path="./specific_controllers/book_controller"}
+small_movielens_controller = {version="*", path="./specific_controllers/small_movielens_controller"}

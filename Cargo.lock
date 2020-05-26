@@ -126,6 +126,12 @@ dependencies = [
 [[package]]
 name = "recommendation-system"
 version = "0.1.0"
+dependencies = [
+ "book_controller 0.1.0",
+ "generic_controller 0.1.0",
+ "movie_controller 0.1.0",
+ "small_movielens_controller 0.1.0",
+]
 
 [[package]]
 name = "regex-automata"

@@ -1,4 +1,3 @@
-use small_movielens_controller::models::{FoundUser, FoundScore, FoundMovie};
 use small_movielens_controller::models::{CreateUser, CreateScore, CreateMovie};
 use small_movielens_controller::schema::{users, movies, scores};
 
@@ -75,18 +74,18 @@ fn main() {
     println!("Start insert users");
 
     for chunk in vector_users.chunks(10000) {
- //       diesel::insert_into(users::table).values(chunk).execute(&connector).expect("Failed insertion of users chunk");
+        diesel::insert_into(users::table).values(chunk).execute(&connector).expect("Failed insertion of users chunk");
     }
 
     println!("Start inserting movies");
 
     for chunk in vector_movies.chunks(10000) {
-   //     diesel::insert_into(movies::table).values(chunk).execute(&connector).expect("Error inserting books");
+        diesel::insert_into(movies::table).values(chunk).execute(&connector).expect("Error inserting books");
     }
 
     println!("Start inserting scores {}", vector_scores.len());
 
     for chunk in vector_scores.chunks(10000) {
-//        diesel::insert_into(scores::table).values(chunk).execute(&connector).expect("Error inserting books");
+        diesel::insert_into(scores::table).values(chunk).execute(&connector).expect("Error inserting books");
     }
 }
