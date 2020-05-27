@@ -50,4 +50,14 @@ fn main() {
     movie_api::distance_by_id(String::from("1"), String::from("2"), distances::Distance::JaccardSim);
     book_api::distance_by_id(String::from("26182"), String::from("37400"), distances::Distance::JaccardSim);
     small_movielens_api::distance_by_id(String::from("125"), String::from("567"), distances::Distance::JaccardSim);
+
+    println!("\n");
+
+    movie_api::knn_by_id(5, String::from("1"), distances::Distance::Manhattan);
+    movie_api::knn_by_id(5, String::from("1"), distances::Distance::Pearson);
+    movie_api::knn_by_id(5, String::from("1"), distances::Distance::Cosine);
+
+    movie_api::knn_by_name(5, String::from("Patrick C"), distances::Distance::Manhattan);
+    movie_api::knn_by_name(5, String::from("Patrick C"), distances::Distance::Pearson);
+    movie_api::knn_by_name(5, String::from("Patrick C"), distances::Distance::Cosine)
 }

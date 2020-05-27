@@ -3,7 +3,7 @@ use std::collections::BinaryHeap;
 use std::hash::Hash;
 use std::cmp::Reverse;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Distance {
     Manhattan,
     Euclidean,
@@ -15,8 +15,8 @@ pub enum Distance {
 }
 
 pub struct TargetToOther<U> {
-    id: U,
-    distance: f64
+    pub id: U,
+    pub distance: f64
 }
 
 impl<U> Eq for TargetToOther<U> {}

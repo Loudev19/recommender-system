@@ -93,3 +93,50 @@ pub fn distance_by_name(namex:String, namey:String, distance_type: Distance) {
         }
     }
 }
+
+pub fn knn_by_id(k: i32, idx: String, distance_type: Distance) {
+    let controller = MovieController::new();
+
+    let usersx = controller.get_user_by_id(idx.parse().expect("First id user in movie knn not parsed"));
+
+    if usersx.is_empty() {
+        println!("No user with id {} found!", idx);
+        return;
+    }
+
+    let userx = &usersx[0];
+
+    let scores = controller.get_all_scores(); 
+
+    let neighbors = distances::knn(k, userx.id, &scores, distance_type.clone());
+
+    println!("k({}) nearest neighbors for {}({})", k, userx.name, userx.id);
+    for it in neighbors {
+        let other = &controller.get_user_by_id(it.id)[0];
+        println!("with {}({}) distance {:?} is {}", other.name, other.id, distance_type.clone(), it.distance);
+    }
+    println!("\n");
+}
+
+pub fn knn_by_name(k: i32, namex: String, distance_type: Distance) {
+    let controller = MovieController::new();
+
+    let usersx = controller.get_user_by_name(&namex);
+
+    if usersx.is_empty() {
+        println!("No user with name {} found!", namex);
+        return;
+    }
+
+    let scores = controller.get_all_scores(); 
+    for u in usersx {
+        let neighbors = distances::knn(k, u.id, &scores, distance_type.clone());
+
+        println!("k({}) nearest neighbors for {}({})", k, u.name, u.id);
+        for it in neighbors {
+            let other = &controller.get_user_by_id(it.id)[0];
+            println!("with {}({}) distance {:?} is {}", other.name, other.id, distance_type, it.distance);
+        }
+    }
+    println!("\n");
+}
