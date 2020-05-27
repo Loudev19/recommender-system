@@ -46,7 +46,7 @@ pub struct CreateScore {
     pub score: f64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct SMUser {
     pub id: i32,
     pub score: HashMap<i32, f64>

@@ -76,4 +76,6 @@ fn main() {
     println!();*/
 
     movie_api::knn_prediction(10, None, None, Some(String::from("Patrick C")), Some(String::from("Gladiator")), distances::Distance::Pearson);
+    small_movielens_api::knn_prediction(10, String::from("567"), Some(String::from("1214")), None, distances::Distance::Pearson);
+    book_api::knn_prediction(10, String::from("26182"), Some(String::from("0060987529")), None, distances::Distance::Pearson);
 }
