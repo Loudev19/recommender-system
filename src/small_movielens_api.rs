@@ -48,7 +48,8 @@ pub fn distance_by_id(idx:String, idy:String, distance_type:Distance) {
         }
     };
 
-    println!("{dist_name:?} Distance between id({x}) and id({y}) is: {distance}", x = userx.id, y = usery.id, distance = distance, dist_name = distance_type);
+    println!("Small Movielens database, {:?} distance between:", distance_type);
+    println!("User id({x}) and user id({y}) is: {distance}\n", x = userx.id, y = usery.id, distance = distance);
 }
 
 pub fn knn_by_id(k: i32, idx: String, distance_type: Distance) {
@@ -67,18 +68,18 @@ pub fn knn_by_id(k: i32, idx: String, distance_type: Distance) {
 
     let neighbors = distances::knn(k, userx.id, &scores, distance_type.clone());
 
-    println!("k({}) nearest neighbors for ({})", k, userx.id);
+    println!("Small movielens database, K({}) nearest neighbors for ({}) with {:?}", k, userx.id, distance_type.clone());
     for it in neighbors {
         let other = &controller.get_user_by_id(it.id)[0];
-        println!("with ({}) distance {:?} is {}", other.id, distance_type.clone(), it.distance);
+        println!("With ({}) distance is {}", other.id, it.distance);
     }
-    println!("\n");
+    println!();
 }
 
-pub fn knn_prediction(k: i32, userid: String, itemx: Option<String>, itemname: Option<String>, distance_type: Distance) {
+pub fn knn_prediction(k: i32, idx: String, idy: Option<String>, itemy: Option<String>, distance_type: Distance) {
     let controller = SmallMovielensController::new();
     
-    let result_user = controller.get_user_by_id(userid.parse().expect("Error parsing useris"));
+    let result_user = controller.get_user_by_id(idx.parse().expect("Error parsing useris"));
 
     if result_user.is_empty() {
         println!("No user in database movie");
@@ -87,10 +88,10 @@ pub fn knn_prediction(k: i32, userid: String, itemx: Option<String>, itemname: O
 
     let mut result_item = Vec::new();
 
-    if let Some(itemname) = itemname {
+    if let Some(itemname) = itemy {
         result_item = controller.get_item_by_name(&itemname);
     } else {
-        if let Some(itemid) = itemx {
+        if let Some(itemid) = idy {
             result_item = controller.get_item_by_id(itemid.parse().expect("Error parsing itemid"));
         } else {
             println!("No item name nor item id");
@@ -100,6 +101,7 @@ pub fn knn_prediction(k: i32, userid: String, itemx: Option<String>, itemname: O
 
     if result_item.is_empty() {
         println!("No item in database movie");
+        return;
     }
 
     let scores = controller.get_all_scores();
@@ -131,12 +133,13 @@ pub fn knn_prediction(k: i32, userid: String, itemx: Option<String>, itemname: O
             }
 
             prediction /= total_influence;
-            println!("Prediction for user ({}) with item {}({}) is: {}", user.id, item.id, item.name, prediction);
+            println!("Small Movielens database, prediction for user ({})", user.id);
+            println!("With item {}({}) score is: {}\n", item.name, item.id, prediction);
         }
     }
 }
 
-pub fn knn_recommend(k: i32, xid: Option<String>, userx: Option<String>, distance_type: Distance) {
+pub fn knn_recommend(k: i32, idx: Option<String>, userx: Option<String>, distance_type: Distance) {
     let controller = SmallMovielensController::new();
     
     let mut result_user = Vec::new();
@@ -144,7 +147,7 @@ pub fn knn_recommend(k: i32, xid: Option<String>, userx: Option<String>, distanc
     if let Some(username) = userx {
         result_user = controller.get_user_by_name(&username);
     } else {
-        if let Some(userid) = xid {
+        if let Some(userid) = idx {
             result_user = controller.get_user_by_id(userid.parse().expect("Error parsing useris"));
         } else {
             println!("No user name nor user id");
@@ -194,9 +197,17 @@ pub fn knn_recommend(k: i32, xid: Option<String>, userx: Option<String>, distanc
         result.sort();
         result.reverse();
 
+        println!("Small Movielens database, recommendations for user ({})", user.id);
+        let mut i = 0;
         for it in result {
-            let item = &controller.get_item_by_id(it.id)[0];
-            println!("Recommend for user ({}) the item {}({}) with score: {}", user.id, item.id, item.name, it.distance);
+            if i < 5 {
+                let item = &controller.get_item_by_id(it.id)[0];
+                println!("{} Item {}({}) with score: {}", i+1, item.name, item.id, it.distance);
+                i += 1;
+            } else {
+                println!();
+                return;
+            }
         }
     }
 }
