@@ -80,4 +80,5 @@ fn main() {
     book_api::knn_prediction(10, String::from("26182"), Some(String::from("0060987529")), None, distances::Distance::Pearson);
 */
     movie_api::knn_recommend(10, None, Some(String::from("Patrick C")), distances::Distance::Pearson);
+    book_api::knn_recommend(10, String::from("26182"), distances::Distance::Pearson);
 }
