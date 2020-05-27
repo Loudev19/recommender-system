@@ -1,7 +1,18 @@
 use std::collections::HashMap;
 use std::hash::Hash;
 
-fn minkowski_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>, grade: i32) -> f64 {
+#[derive(Debug)]
+pub enum Distance {
+    Manhattan,
+    Euclidean,
+    Minkowski(i32),
+    Pearson,
+    Cosine,
+    JaccardDist,
+    JaccardSim
+}
+
+pub fn minkowski_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>, grade: i32) -> f64 {
     let mut distance = 0.0;
 
     for (item, x) in x_scores {
@@ -12,15 +23,15 @@ fn minkowski_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_sco
     distance.powf(1.0/(grade as f64))
 }
 
-fn euclidean_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
+pub fn euclidean_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
     minkowski_distance_between(x_scores, y_scores, 2)
 }
 
-fn manhattan_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
+pub fn manhattan_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
     minkowski_distance_between(x_scores, y_scores, 1)
 }
 
-fn pearson_correlation_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
+pub fn pearson_correlation_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
     let mut dot_product = 0.0;
     let mut sumation_x_score = 0.0;
     let mut sumation_y_score = 0.0;
@@ -45,10 +56,14 @@ fn pearson_correlation_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_sc
     let thirdx = (dot_square_x - secondx).sqrt();
     let thirdy = (dot_square_y - secondy).sqrt();
 
+    if (thirdx * thirdy) == 0.0 {
+        return 0.0;
+    }
+
     (dot_product - first)/(thirdx * thirdy)
 }
 
-fn cosine_similarity_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
+pub fn cosine_similarity_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
     let mut dot_product = 0.0;
     let mut len_x_score = 0.0;
     let mut len_y_score = 0.0;
@@ -61,10 +76,14 @@ fn cosine_similarity_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scor
         }
     }
 
+    if len_x_score.sqrt() == 0.0 || len_y_score.sqrt() == 0.0 {
+        return 0.0;
+    }
+
     dot_product/(len_x_score.sqrt() * len_y_score.sqrt())
 }
 
-fn jaccard_similarity_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
+pub fn jaccard_similarity_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
     let mut intersection = 0;
 
     for item in x_scores.keys() {
@@ -76,7 +95,7 @@ fn jaccard_similarity_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_sco
     intersection as f64/union as f64
 }
 
-fn jaccard_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
+pub fn jaccard_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
     1.0 - jaccard_similarity_between(x_scores, y_scores)
 }
 
