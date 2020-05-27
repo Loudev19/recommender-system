@@ -140,3 +140,75 @@ pub fn knn_by_name(k: i32, namex: String, distance_type: Distance) {
     }
     println!("\n");
 }
+
+pub fn knn_prediction(k: i32, xid: Option<String>, itemx: Option<String>, userx: Option<String>, itemname: Option<String>, distance_type: Distance) {
+    let controller = MovieController::new();
+    
+    let mut result_user = Vec::new();
+
+    if let Some(username) = userx {
+        result_user = controller.get_user_by_name(&username);
+    } else {
+        if let Some(userid) = xid {
+            result_user = controller.get_user_by_id(userid.parse().expect("Error parsing useris"));
+        } else {
+            println!("No user name nor user id");
+            return;
+        }
+    }
+
+    if result_user.is_empty() {
+        println!("No user in database movie");
+        return;
+    }
+
+    let mut result_item = Vec::new();
+
+    if let Some(itemname) = itemname {
+        result_item = controller.get_item_by_name(&itemname);
+    } else {
+        if let Some(itemid) = itemx {
+            result_item = controller.get_item_by_id(itemid.parse().expect("Error parsing itemid"));
+        } else {
+            println!("No item name nor item id");
+            return;
+        }
+    }
+
+    if result_item.is_empty() {
+        println!("No item in database movie");
+    }
+
+    let scores = controller.get_all_scores();
+
+    for user in &result_user {
+        let neighbors = distances::knn(k, user.id, &scores, distance_type.clone());
+        let mut musers_neighbors= Vec::new();
+        for n in &neighbors {
+            musers_neighbors.push(controller.get_user_by_id(n.id)[0].clone());
+        }
+        
+        let mut pearson_results = Vec::new();
+        
+        for muser in &musers_neighbors {
+            let pearson_comp = distances::pearson_correlation_between(&user.scores(), &muser.scores());
+            pearson_results.push(pearson_comp);
+        }
+
+        for item in &result_item {
+            let mut total_influence = 0.0;
+            let mut prediction = 0.0;
+            for i in 0..neighbors.len() {
+                if musers_neighbors[i].scores().contains_key(&item.id) {
+                    //println!("{} {}", musers_neighbors[i].name(), pearson_results[i]);
+                    let score_item = musers_neighbors[i].scores().get(&item.id).unwrap().clone();
+                    total_influence += pearson_results[i];
+                    prediction += score_item * pearson_results[i];
+                }
+            }
+
+            prediction /= total_influence;
+            println!("Prediction for user {}({}) with item {}({}) is: {}", user.id, user.name, item.id, item.name, prediction);
+        }
+    }
+}

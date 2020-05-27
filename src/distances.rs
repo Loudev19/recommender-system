@@ -128,23 +128,23 @@ pub fn jaccard_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_s
     1.0 - jaccard_similarity_between(x_scores, y_scores)
 }
 
-pub fn knn<I:Hash+Eq+Clone>(k: i32, user: i32, scores: &HashMap<i32, HashMap<I, f64>>, dist_type: Distance) -> Vec<TargetToOther<i32>> {
-    match dist_type {
+pub fn knn<I:Hash+Eq+Clone>(k: i32, user: i32, scores: &HashMap<i32, HashMap<I, f64>>, distance_type: Distance) -> Vec<TargetToOther<i32>> {
+    match distance_type {
         Distance::Manhattan |
         Distance::Euclidean |
         Distance::Minkowski(_) => {
-            knn_max_heap(k, user, scores, dist_type)
+            knn_max_heap(k, user, scores, distance_type)
         }
         Distance::Pearson |
         Distance::Cosine |
         Distance::JaccardDist |
         Distance::JaccardSim => {
-            knn_min_heap(k, user, scores, dist_type)
+            knn_min_heap(k, user, scores, distance_type)
         }
     }
 }
 
-fn knn_max_heap<I:Hash+Eq+Clone>(k: i32, user: i32, all_scores: &HashMap<i32, HashMap<I, f64>>, dist_type: Distance) -> Vec<TargetToOther<i32>>{
+fn knn_max_heap<I:Hash+Eq+Clone>(k: i32, user: i32, all_scores: &HashMap<i32, HashMap<I, f64>>, distance_type: Distance) -> Vec<TargetToOther<i32>>{
     let mut max_heap:BinaryHeap<TargetToOther<i32>> = BinaryHeap::new();
     
     let user_scores = all_scores.get(&user).expect("Error get target in maxheap");
@@ -154,7 +154,7 @@ fn knn_max_heap<I:Hash+Eq+Clone>(k: i32, user: i32, all_scores: &HashMap<i32, Ha
             continue;
         }
 
-        let dist = match dist_type {
+        let dist = match distance_type {
             Distance::Manhattan => {
                 manhattan_distance_between(user_scores, scores)
             }
@@ -185,7 +185,7 @@ fn knn_max_heap<I:Hash+Eq+Clone>(k: i32, user: i32, all_scores: &HashMap<i32, Ha
     max_heap.into_sorted_vec()
 }
 
-fn knn_min_heap<I:Hash+Eq+Clone>(k: i32, user: i32, all_scores: &HashMap<i32, HashMap<I, f64>>, dist_type: Distance) -> Vec<TargetToOther<i32>>{
+fn knn_min_heap<I:Hash+Eq+Clone>(k: i32, user: i32, all_scores: &HashMap<i32, HashMap<I, f64>>, distance_type: Distance) -> Vec<TargetToOther<i32>>{
     let mut min_heap:BinaryHeap<Reverse<TargetToOther<i32>>> = BinaryHeap::new();
     
     let user_scores = all_scores.get(&user).expect("Error get target in maxheap");
@@ -195,7 +195,7 @@ fn knn_min_heap<I:Hash+Eq+Clone>(k: i32, user: i32, all_scores: &HashMap<i32, Ha
             continue;
         }
 
-        let dist = match dist_type {
+        let dist = match distance_type {
             Distance::Manhattan => {0.0}
             Distance::Euclidean => {0.0}
             Distance::Minkowski(_) => {0.0}

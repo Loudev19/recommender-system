@@ -4,7 +4,7 @@ pub mod book_api;
 pub mod small_movielens_api;
 
 fn main() {
-    movie_api::distance_by_name(String::from("Heather"), String::from("Patrick C"), distances::Distance::Manhattan);
+    /*movie_api::distance_by_name(String::from("Heather"), String::from("Patrick C"), distances::Distance::Manhattan);
     movie_api::distance_by_id(String::from("1"), String::from("2"), distances::Distance::Manhattan);
     book_api::distance_by_id(String::from("26182"), String::from("37400"), distances::Distance::Manhattan);
     small_movielens_api::distance_by_id(String::from("125"), String::from("567"), distances::Distance::Manhattan);
@@ -73,4 +73,7 @@ fn main() {
     small_movielens_api::knn_by_id(3, String::from("567"), distances::Distance::Pearson);
     small_movielens_api::knn_by_id(3, String::from("567"), distances::Distance::Cosine);
 
+    println!();*/
+
+    movie_api::knn_prediction(10, None, None, Some(String::from("Patrick C")), Some(String::from("Gladiator")), distances::Distance::Pearson);
 }

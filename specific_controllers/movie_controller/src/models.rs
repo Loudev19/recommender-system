@@ -44,7 +44,7 @@ pub struct CreateScore {
     pub score: f64,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MUser {
     pub id: i32,
     pub name: String,
