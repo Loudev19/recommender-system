@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::distances;
 use crate::distances::Distance;
 
@@ -209,6 +211,71 @@ pub fn knn_prediction(k: i32, xid: Option<String>, itemx: Option<String>, userx:
 
             prediction /= total_influence;
             println!("Prediction for user {}({}) with item {}({}) is: {}", user.id, user.name, item.id, item.name, prediction);
+        }
+    }
+}
+
+pub fn knn_recommend(k: i32, xid: Option<String>, userx: Option<String>, distance_type: Distance) {
+    let controller = MovieController::new();
+    
+    let mut result_user = Vec::new();
+
+    if let Some(username) = userx {
+        result_user = controller.get_user_by_name(&username);
+    } else {
+        if let Some(userid) = xid {
+            result_user = controller.get_user_by_id(userid.parse().expect("Error parsing useris"));
+        } else {
+            println!("No user name nor user id");
+            return;
+        }
+    }
+    if result_user.is_empty() {
+        println!("No user in database movie");
+        return;
+    }
+
+    let all_scores = controller.get_all_scores();
+    for user in &result_user {
+        let mut recommendations = HashMap::new();
+        let neighbors = distances::knn(k, user.id, &all_scores, distance_type.clone());
+        let mut musers_neighbors= Vec::new();
+        for n in &neighbors {
+            musers_neighbors.push(controller.get_user_by_id(n.id)[0].clone());
+        }
+        
+        let mut pearson_results = Vec::new();
+        let mut total_distance = 0.0;
+        for muser in &musers_neighbors {
+            let pearson_comp = distances::pearson_correlation_between(&user.scores(), &muser.scores());
+            pearson_results.push(pearson_comp);
+            total_distance += pearson_comp;
+        }
+
+        for i in 0..musers_neighbors.len() {
+            let weight = pearson_results[i]/total_distance;
+            for (itemid, score) in musers_neighbors[i].scores() {
+                if !user.scores().contains_key(&itemid) {
+                    if recommendations.contains_key(&itemid) {
+                        recommendations.insert(itemid, recommendations.get(&itemid).unwrap() + (weight * score));
+                    } else {
+                        recommendations.insert(itemid, weight * score);
+                    }
+                }
+            }
+        }
+
+        let mut result = Vec::new();
+        for (itemid, score) in recommendations {
+            result.push(distances::TargetToOther{id: itemid, distance: score});
+        }
+
+        result.sort();
+        result.reverse();
+
+        for it in result {
+            let item = &controller.get_item_by_id(it.id)[0];
+            println!("Recommend for user {}({}) the item {}({}) with score: {}", user.id, user.name, item.id, item.name, it.distance);
         }
     }
 }
