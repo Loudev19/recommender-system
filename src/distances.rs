@@ -1,5 +1,7 @@
 use std::collections::HashMap;
+use std::collections::BinaryHeap;
 use std::hash::Hash;
+use std::cmp::Reverse;
 
 #[derive(Debug)]
 pub enum Distance {
@@ -11,6 +13,33 @@ pub enum Distance {
     JaccardDist,
     JaccardSim
 }
+
+pub struct TargetToOther<U> {
+    id: U,
+    distance: f64
+}
+
+impl<U> Eq for TargetToOther<U> {}
+
+impl<U> PartialEq for TargetToOther<U> {
+    fn eq(&self, other: &Self) -> bool {
+        self.distance == other.distance
+    }
+}
+
+impl<U> PartialOrd for TargetToOther<U> {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        self.distance.partial_cmp(&other.distance)
+    }
+}
+
+impl<U> Ord for TargetToOther<U> {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.distance.partial_cmp(&other.distance).unwrap()
+    }
+}
+
+
 
 pub fn minkowski_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>, grade: i32) -> f64 {
     let mut distance = 0.0;
@@ -97,5 +126,108 @@ pub fn jaccard_similarity_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y
 
 pub fn jaccard_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
     1.0 - jaccard_similarity_between(x_scores, y_scores)
+}
+
+pub fn knn<I:Hash+Eq+Clone>(k: i32, user: i32, scores: &HashMap<i32, HashMap<I, f64>>, dist_type: Distance) -> Vec<TargetToOther<i32>> {
+    match dist_type {
+        Distance::Manhattan |
+        Distance::Euclidean |
+        Distance::Minkowski(_) => {
+            knn_max_heap(k, user, scores, dist_type)
+        }
+        Distance::Pearson |
+        Distance::Cosine |
+        Distance::JaccardDist |
+        Distance::JaccardSim => {
+            knn_min_heap(k, user, scores, dist_type)
+        }
+    }
+}
+
+fn knn_max_heap<I:Hash+Eq+Clone>(k: i32, user: i32, all_scores: &HashMap<i32, HashMap<I, f64>>, dist_type: Distance) -> Vec<TargetToOther<i32>>{
+    let mut max_heap:BinaryHeap<TargetToOther<i32>> = BinaryHeap::new();
+    
+    let user_scores = all_scores.get(&user).expect("Error get target in maxheap");
+
+    for (other, scores) in all_scores {
+        if user == *other {
+            continue;
+        }
+
+        let dist = match dist_type {
+            Distance::Manhattan => {
+                manhattan_distance_between(user_scores, scores)
+            }
+            Distance::Euclidean => {
+                euclidean_distance_between(user_scores, scores)
+            }
+            Distance::Minkowski(grade) => {
+                minkowski_distance_between(user_scores, scores, grade)
+            }
+            Distance::Pearson => {0.0}
+            Distance::Cosine => {0.0}
+            Distance::JaccardDist => {0.0}
+            Distance::JaccardSim => {0.0}
+        };
+
+        let target_to_other = TargetToOther{id: *other, distance: dist};
+
+        if (max_heap.len() as i32) == k {
+            if max_heap.peek().unwrap().distance > dist {
+                max_heap.pop();
+                max_heap.push(target_to_other);
+            }
+        } else {
+            max_heap.push(target_to_other);
+        }
+    }
+    
+    max_heap.into_sorted_vec()
+}
+
+fn knn_min_heap<I:Hash+Eq+Clone>(k: i32, user: i32, all_scores: &HashMap<i32, HashMap<I, f64>>, dist_type: Distance) -> Vec<TargetToOther<i32>>{
+    let mut min_heap:BinaryHeap<Reverse<TargetToOther<i32>>> = BinaryHeap::new();
+    
+    let user_scores = all_scores.get(&user).expect("Error get target in maxheap");
+
+    for (other, scores) in all_scores {
+        if user == *other {
+            continue;
+        }
+
+        let dist = match dist_type {
+            Distance::Manhattan => {0.0}
+            Distance::Euclidean => {0.0}
+            Distance::Minkowski(_) => {0.0}
+            Distance::Pearson => {
+                pearson_correlation_between(user_scores, scores)
+            }
+            Distance::Cosine => {
+                cosine_similarity_between(user_scores, scores)
+            }
+            Distance::JaccardDist => {0.0}
+            Distance::JaccardSim => {0.0}
+        };
+
+        let target_to_other = TargetToOther{id: *other, distance: dist};
+
+        if (min_heap.len() as i32) == k {
+            if min_heap.peek().unwrap().0.distance < dist {
+                min_heap.pop();
+                min_heap.push(Reverse(target_to_other));
+            }
+        } else {
+            min_heap.push(Reverse(target_to_other));
+        }
+    }
+    
+    let temp = min_heap.into_sorted_vec();
+
+    let mut result = Vec::new();
+    for it in temp {
+        result.push(it.0);
+    }
+
+    result
 }
 
