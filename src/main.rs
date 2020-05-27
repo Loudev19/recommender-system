@@ -53,11 +53,24 @@ fn main() {
 
     println!("\n");
 
-    movie_api::knn_by_id(5, String::from("1"), distances::Distance::Manhattan);
-    movie_api::knn_by_id(5, String::from("1"), distances::Distance::Pearson);
-    movie_api::knn_by_id(5, String::from("1"), distances::Distance::Cosine);
+    movie_api::knn_by_id(3, String::from("1"), distances::Distance::Manhattan);
+    movie_api::knn_by_id(3, String::from("1"), distances::Distance::Pearson);
+    movie_api::knn_by_id(3, String::from("1"), distances::Distance::Cosine);
 
-    movie_api::knn_by_name(5, String::from("Patrick C"), distances::Distance::Manhattan);
-    movie_api::knn_by_name(5, String::from("Patrick C"), distances::Distance::Pearson);
-    movie_api::knn_by_name(5, String::from("Patrick C"), distances::Distance::Cosine)
+    movie_api::knn_by_name(3, String::from("Patrick C"), distances::Distance::Manhattan);
+    movie_api::knn_by_name(3, String::from("Patrick C"), distances::Distance::Pearson);
+    movie_api::knn_by_name(3, String::from("Patrick C"), distances::Distance::Cosine);
+
+    println!("books");
+
+    book_api::knn_by_id(3, String::from("26182"), distances::Distance::Manhattan);
+    book_api::knn_by_id(3, String::from("26182"), distances::Distance::Pearson);
+    book_api::knn_by_id(3, String::from("26182"), distances::Distance::Cosine);
+
+    println!("movielens");
+
+    small_movielens_api::knn_by_id(3, String::from("567"), distances::Distance::Manhattan);
+    small_movielens_api::knn_by_id(3, String::from("567"), distances::Distance::Pearson);
+    small_movielens_api::knn_by_id(3, String::from("567"), distances::Distance::Cosine);
+
 }

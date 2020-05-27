@@ -48,3 +48,27 @@ pub fn distance_by_id(idx:String, idy:String, distance_type:Distance) {
 
     println!("{dist_name:?} Distance between id({x}) and id({y}) is: {distance}", x = userx.id, y = usery.id, distance = distance, dist_name = distance_type);
 }
+
+pub fn knn_by_id(k: i32, idx: String, distance_type: Distance) {
+    let controller = SmallMovielensController::new();
+
+    let usersx = controller.get_user_by_id(idx.parse().expect("First id user in small movielens knn not parsed"));
+
+    if usersx.is_empty() {
+        println!("No user with id {} found!", idx);
+        return;
+    }
+
+    let userx = &usersx[0];
+
+    let scores = controller.get_all_scores(); 
+
+    let neighbors = distances::knn(k, userx.id, &scores, distance_type.clone());
+
+    println!("k({}) nearest neighbors for ({})", k, userx.id);
+    for it in neighbors {
+        let other = &controller.get_user_by_id(it.id)[0];
+        println!("with ({}) distance {:?} is {}", other.id, distance_type.clone(), it.distance);
+    }
+    println!("\n");
+}

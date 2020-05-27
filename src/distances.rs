@@ -85,7 +85,7 @@ pub fn pearson_correlation_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, 
     let thirdx = (dot_square_x - secondx).sqrt();
     let thirdy = (dot_square_y - secondy).sqrt();
 
-    if (thirdx * thirdy) == 0.0 {
+    if (thirdx * thirdy) == 0.0 || intersection == 0.0{
         return 0.0;
     }
 
