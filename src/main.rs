@@ -61,16 +61,9 @@ fn main() {
     small_movielens_api::knn_by_id(3, String::from("567"), distances::Distance::Cosine);
 */
 
-/*  
+  
     //Predictions
-    movie_api::knn_prediction(10, None, None, Some(String::from("Patrick C")), Some(String::from("Gladiator")), distances::Distance::Pearson);
-    small_movielens_api::knn_prediction(10, String::from("567"), Some(String::from("1214")), None, distances::Distance::Pearson);
-    book_api::knn_prediction(10, String::from("26182"), Some(String::from("0060987529")), None, distances::Distance::Pearson);
-*/
-/*
-    //Recommendations
-    movie_api::knn_recommend(10, None, Some(String::from("Patrick C")), distances::Distance::Pearson);
-    book_api::knn_recommend(10, String::from("26182"), distances::Distance::Pearson);
-    small_movielens_api::knn_recommend(10, Some(String::from("5")), None, distances::Distance::Pearson);
-*/
+    movie_api::knn_prediction(30, None, None, Some(String::from("Patrick C")), Some(String::from("Gladiator")), distances::Distance::Euclidean);
+    small_movielens_api::knn_prediction(30, String::from("567"), Some(String::from("1214")), None, distances::Distance::Euclidean);
+    book_api::knn_prediction(30, String::from("26182"), Some(String::from("0060987529")), None, distances::Distance::Euclidean);
 }

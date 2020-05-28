@@ -3,6 +3,7 @@ use std::collections::BinaryHeap;
 use std::hash::Hash;
 use std::cmp::Reverse;
 
+pub const DISABLE: f64 = f64::INFINITY;
 #[derive(Debug, Clone)]
 pub enum Distance {
     Manhattan,
@@ -43,12 +44,17 @@ impl<U> Ord for TargetToOther<U> {
 
 pub fn minkowski_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>, grade: i32) -> f64 {
     let mut distance = 0.0;
+    let mut intersection = false;
 
     for (item, x) in x_scores {
         if let Some(y) = y_scores.get(item) {
             distance += (x - y).abs().powi(grade);
+            intersection = true;
         }
     }
+
+    if !intersection {return DISABLE;}
+
     distance.powf(1.0/(grade as f64))
 }
 
@@ -86,7 +92,7 @@ pub fn pearson_correlation_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, 
     let thirdy = (dot_square_y - secondy).sqrt();
 
     if (thirdx * thirdy) == 0.0 || intersection == 0.0{
-        return 0.0;
+        return DISABLE;
     }
 
     (dot_product - first)/(thirdx * thirdy)
@@ -106,7 +112,7 @@ pub fn cosine_similarity_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_
     }
 
     if len_x_score.sqrt() == 0.0 || len_y_score.sqrt() == 0.0 {
-        return 0.0;
+        return DISABLE;
     }
 
     dot_product/(len_x_score.sqrt() * len_y_score.sqrt())
@@ -121,11 +127,15 @@ pub fn jaccard_similarity_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y
 
     let union = ((x_scores.keys().len() - intersection) + y_scores.keys().len()) as f64;
 
+    if union == 0.0 {return  DISABLE;}
+
     intersection as f64/union as f64
 }
 
 pub fn jaccard_distance_between<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>) -> f64 {
-    1.0 - jaccard_similarity_between(x_scores, y_scores)
+    let j_sim = jaccard_similarity_between(x_scores, y_scores);
+    if j_sim == DISABLE {return  DISABLE;}
+    1.0 - j_sim
 }
 
 pub fn knn<I:Hash+Eq+Clone>(k: i32, user: i32, scores: &HashMap<i32, HashMap<I, f64>>, distance_type: Distance) -> Vec<TargetToOther<i32>> {
@@ -164,11 +174,15 @@ fn knn_max_heap<I:Hash+Eq+Clone>(k: i32, user: i32, all_scores: &HashMap<i32, Ha
             Distance::Minkowski(grade) => {
                 minkowski_distance_between(user_scores, scores, grade)
             }
-            Distance::Pearson => {0.0}
-            Distance::Cosine => {0.0}
-            Distance::JaccardDist => {0.0}
-            Distance::JaccardSim => {0.0}
+            Distance::Pearson => {DISABLE}
+            Distance::Cosine => {DISABLE}
+            Distance::JaccardDist => {
+                jaccard_distance_between(user_scores, scores)
+            }
+            Distance::JaccardSim => {DISABLE}
         };
+
+        if dist == DISABLE {continue;}
 
         let target_to_other = TargetToOther{id: *other, distance: dist};
 
@@ -196,18 +210,22 @@ fn knn_min_heap<I:Hash+Eq+Clone>(k: i32, user: i32, all_scores: &HashMap<i32, Ha
         }
 
         let dist = match distance_type {
-            Distance::Manhattan => {0.0}
-            Distance::Euclidean => {0.0}
-            Distance::Minkowski(_) => {0.0}
+            Distance::Manhattan => {DISABLE}
+            Distance::Euclidean => {DISABLE}
+            Distance::Minkowski(_) => {DISABLE}
             Distance::Pearson => {
                 pearson_correlation_between(user_scores, scores)
             }
             Distance::Cosine => {
                 cosine_similarity_between(user_scores, scores)
             }
-            Distance::JaccardDist => {0.0}
-            Distance::JaccardSim => {0.0}
+            Distance::JaccardDist => {DISABLE}
+            Distance::JaccardSim => {
+                jaccard_similarity_between(user_scores, scores)
+            }
         };
+
+        if dist == DISABLE {continue;}
 
         let target_to_other = TargetToOther{id: *other, distance: dist};
 

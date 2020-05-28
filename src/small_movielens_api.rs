@@ -124,6 +124,7 @@ pub fn knn_prediction(k: i32, idx: String, idy: Option<String>, itemy: Option<St
             let mut total_influence = 0.0;
             let mut prediction = 0.0;
             for i in 0..neighbors.len() {
+                if pearson_results[i] == distances::DISABLE {continue;}
                 if musers_neighbors[i].scores().contains_key(&item.id) {
                     //println!("{} {}", musers_neighbors[i].name(), pearson_results[i]);
                     let score_item = musers_neighbors[i].scores().get(&item.id).unwrap().clone();
@@ -139,75 +140,3 @@ pub fn knn_prediction(k: i32, idx: String, idy: Option<String>, itemy: Option<St
     }
 }
 
-pub fn knn_recommend(k: i32, idx: Option<String>, userx: Option<String>, distance_type: Distance) {
-    let controller = SmallMovielensController::new();
-    
-    let mut result_user = Vec::new();
-
-    if let Some(username) = userx {
-        result_user = controller.get_user_by_name(&username);
-    } else {
-        if let Some(userid) = idx {
-            result_user = controller.get_user_by_id(userid.parse().expect("Error parsing useris"));
-        } else {
-            println!("No user name nor user id");
-            return;
-        }
-    }
-    if result_user.is_empty() {
-        println!("No user in database movie");
-        return;
-    }
-
-    let all_scores = controller.get_all_scores();
-    for user in &result_user {
-        let mut recommendations = HashMap::new();
-        let neighbors = distances::knn(k, user.id, &all_scores, distance_type.clone());
-        let mut musers_neighbors= Vec::new();
-        for n in &neighbors {
-            musers_neighbors.push(controller.get_user_by_id(n.id)[0].clone());
-        }
-        
-        let mut pearson_results = Vec::new();
-        let mut total_distance = 0.0;
-        for muser in &musers_neighbors {
-            let pearson_comp = distances::pearson_correlation_between(&user.scores(), &muser.scores());
-            pearson_results.push(pearson_comp);
-            total_distance += pearson_comp;
-        }
-
-        for i in 0..musers_neighbors.len() {
-            let weight = pearson_results[i]/total_distance;
-            for (itemid, score) in musers_neighbors[i].scores() {
-                if !user.scores().contains_key(&itemid) {
-                    if recommendations.contains_key(&itemid) {
-                        recommendations.insert(itemid, recommendations.get(&itemid).unwrap() + (weight * score));
-                    } else {
-                        recommendations.insert(itemid, weight * score);
-                    }
-                }
-            }
-        }
-
-        let mut result = Vec::new();
-        for (itemid, score) in recommendations {
-            result.push(distances::TargetToOther{id: itemid, distance: score});
-        }
-
-        result.sort();
-        result.reverse();
-
-        println!("Small Movielens database, recommendations for user ({})", user.id);
-        let mut i = 0;
-        for it in result {
-            if i < 5 {
-                let item = &controller.get_item_by_id(it.id)[0];
-                println!("{} Item {}({}) with score: {}", i+1, item.name, item.id, it.distance);
-                i += 1;
-            } else {
-                println!();
-                return;
-            }
-        }
-    }
-}
