@@ -77,5 +77,5 @@ fn create_score(conn: &PgConnection, xscore:f64, xuserid: i32, xmovieid: i32) ->
     diesel::insert_into(scores::table)
         .values(&new_score)
         .get_result(conn)
-        .expect("msg")
+        .expect("Error creating new score")
 }

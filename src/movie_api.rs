@@ -1,7 +1,6 @@
-use std::collections::HashMap;
-
-use crate::distances;
-use crate::distances::Distance;
+use crate::distances_user;
+use crate::distances_item;
+use crate::distances_user::Distance;
 
 use generic_controller::{GenericController, User};
 use movie_controller::m_controller::MovieController;
@@ -25,29 +24,7 @@ pub fn distance_by_id(idx:String, idy:String, distance_type: Distance) {
     let userx = &usersx[0];
     let usery = &usersy[0];
 
-    let distance = match distance_type {
-        Distance::Manhattan => {
-            distances::manhattan_distance_between(&userx.scores(), &usery.scores())
-        }
-        Distance::Euclidean => {
-            distances::euclidean_distance_between(&userx.scores(), &usery.scores())
-        }
-        Distance::Minkowski(grade) => {
-            distances::minkowski_distance_between(&userx.scores(), &usery.scores(), grade)
-        }
-        Distance::Pearson => {
-            distances::pearson_correlation_between(&userx.scores(), &usery.scores())
-        }
-        Distance::Cosine => {
-            distances::cosine_similarity_between(&userx.scores(), &usery.scores())
-        }
-        Distance::JaccardDist => {
-            distances::jaccard_distance_between(&userx.scores(), &usery.scores())
-        }
-        Distance::JaccardSim => {
-            distances::jaccard_similarity_between(&userx.scores(), &usery.scores())
-        }
-    };
+    let distance = distances_user::match_distances(&userx.scores(), &usery.scores(), distance_type.clone());
     println!("Movie database, {:?} distance between:", distance_type);
     println!("User id({x}) and user id({y}) is: {distance}\n", x = userx.id, y = usery.id, distance = distance);
 }
@@ -69,29 +46,7 @@ pub fn distance_by_name(namex:String, namey:String, distance_type: Distance) {
 
     for x in &usersx {
         for y in &usersy {
-            let distance = match distance_type {
-                Distance::Manhattan => {
-                    distances::manhattan_distance_between::<i32>(&x.scores(), &y.scores())
-                }
-                Distance::Euclidean => {
-                    distances::euclidean_distance_between::<i32>(&x.scores(), &y.scores())
-                }
-                Distance::Minkowski(grade) => {
-                    distances::minkowski_distance_between(&x.scores(), &y.scores(), grade)
-                }
-                Distance::Pearson => {
-                    distances::pearson_correlation_between(&x.scores(), &y.scores())
-                }
-                Distance::Cosine => {
-                    distances::cosine_similarity_between(&x.scores(), &y.scores())
-                }
-                Distance::JaccardDist => {
-                    distances::jaccard_distance_between(&x.scores(), &y.scores())
-                }
-                Distance::JaccardSim => {
-                    distances::jaccard_similarity_between(&x.scores(), &y.scores())
-                }
-            };
+            let distance = distances_user::match_distances(&x.scores(), &y.scores(), distance_type.clone());
             println!("Movie database, {:?} distance between:", distance_type);
             println!("User {namex}({idx}) and user {namey}({idy}) is: {distance}\n", namex = x.name, idx = x.id, namey = y.name, idy = y.id, distance = distance);
         }
@@ -110,7 +65,7 @@ pub fn knn_by_id(k: i32, idx: String, distance_type: Distance) {
 
     let userx = &usersx[0];
     let scores = controller.get_all_scores(); 
-    let neighbors = distances::knn(k, userx.id, &scores, distance_type.clone());
+    let neighbors = distances_user::knn(k, userx.id, &scores, distance_type.clone());
 
     println!("Movie database, K({}) nearest neighbors for {}({}) with {:?}", k, userx.name, userx.id, distance_type.clone());
     for it in neighbors {
@@ -132,7 +87,7 @@ pub fn knn_by_name(k: i32, namex: String, distance_type: Distance) {
 
     let scores = controller.get_all_scores(); 
     for u in usersx {
-        let neighbors = distances::knn(k, u.id, &scores, distance_type.clone());
+        let neighbors = distances_user::knn(k, u.id, &scores, distance_type.clone());
 
         println!("Movie database, K({}) nearest neighbors for user {}({}) with {:?}", k, u.name, u.id, distance_type);
         for it in neighbors {
@@ -185,7 +140,7 @@ pub fn knn_prediction(k: i32, idx: Option<String>, idy: Option<String>, userx: O
     let scores = controller.get_all_scores();
 
     for user in &result_user {
-        let neighbors = distances::knn(k, user.id, &scores, distance_type.clone());
+        let neighbors = distances_user::knn(k, user.id, &scores, distance_type.clone());
         let mut musers_neighbors= Vec::new();
         for n in &neighbors {
             musers_neighbors.push(controller.get_user_by_id(n.id)[0].clone());
@@ -194,7 +149,7 @@ pub fn knn_prediction(k: i32, idx: Option<String>, idy: Option<String>, userx: O
         let mut pearson_results = Vec::new();
         
         for muser in &musers_neighbors {
-            let pearson_comp = distances::pearson_correlation_between(&user.scores(), &muser.scores());
+            let pearson_comp = distances_user::pearson_correlation_between(&user.scores(), &muser.scores());
             pearson_results.push(pearson_comp);
         }
 
@@ -202,7 +157,7 @@ pub fn knn_prediction(k: i32, idx: Option<String>, idy: Option<String>, userx: O
             let mut total_influence = 0.0;
             let mut prediction = 0.0;
             for i in 0..neighbors.len() {
-                if pearson_results[i] == distances::DISABLE {continue;}
+                if pearson_results[i] == distances_user::DISABLE {continue;}
                 if musers_neighbors[i].scores().contains_key(&item.id) {
                     //println!("{} {}", musers_neighbors[i].name(), pearson_results[i]);
                     let score_item = musers_neighbors[i].scores().get(&item.id).unwrap().clone();
@@ -216,6 +171,42 @@ pub fn knn_prediction(k: i32, idx: Option<String>, idy: Option<String>, userx: O
             println!("With item {}({}) score is: {}\n", item.name, item.id, prediction);
         }
     }
+}
+
+pub fn distance_item_by_id(idx:String, idy:String) {
+    let controller = MovieController::new();
+
+    let all_scores = controller.get_all_scores();    
+
+    let idx = idx.parse().expect("Error parsing item id");
+    let idy = idy.parse().expect("Error parsing item id");
+
+    if controller.get_item_by_id(idx).is_empty() || controller.get_item_by_id(idy).is_empty(){
+        println!("One or both items are not found in the database");
+        return;
+    }
+
+    let distance = distances_item::acosine_similarity_between(idx, idy, &all_scores);
+    println!("Movie database, Adjusted Cosine Similarity between:");
+    println!("Item id({x}) and item id({y}) is: {distance}\n", x = idx, y = idy, distance = distance);
+}
+
+pub fn distance_item_by_name(namex:String, namey:String) {
+    let controller = MovieController::new();
+
+    let all_scores = controller.get_all_scores();    
+
+    if controller.get_item_by_name(&namex).is_empty() || controller.get_item_by_name(&namey).is_empty(){
+        println!("One or both items are not found in the database");
+        return;
+    }
+
+    let idx = controller.get_item_by_name(&namex)[0].id;
+    let idy = controller.get_item_by_name(&namey)[0].id;
+
+    let distance = distances_item::acosine_similarity_between(idx, idy, &all_scores);
+    println!("Movie database, Adjusted Cosine Similarity between:");
+    println!("Item id({x}) and item id({y}) is: {distance}\n", x = idx, y = idy, distance = distance);
 }
 
 

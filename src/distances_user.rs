@@ -249,3 +249,29 @@ fn knn_min_heap<I:Hash+Eq+Clone>(k: i32, user: i32, all_scores: &HashMap<i32, Ha
     result
 }
 
+pub fn match_distances<I:Hash+Eq+Clone>(x_scores: &HashMap<I, f64>, y_scores: &HashMap<I, f64>, distance_type: Distance) -> f64 {
+    let distance = match distance_type {
+        Distance::Manhattan => {
+            manhattan_distance_between(x_scores, y_scores)
+        }
+        Distance::Euclidean => {
+            euclidean_distance_between(x_scores, y_scores)
+        }
+        Distance::Minkowski(grade) => {
+            minkowski_distance_between(x_scores, y_scores, grade)
+        }
+        Distance::Pearson => {
+            pearson_correlation_between(x_scores, y_scores)
+        }
+        Distance::Cosine => {
+            cosine_similarity_between(x_scores, y_scores)
+        }
+        Distance::JaccardDist => {
+            jaccard_distance_between(x_scores, y_scores)
+        }
+        Distance::JaccardSim => {
+            jaccard_similarity_between(x_scores, y_scores)
+        }
+    };
+    distance
+}
