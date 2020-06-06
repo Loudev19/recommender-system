@@ -51,7 +51,7 @@ pub struct MUser {
     pub score: HashMap<i32, f64>
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct MItem {
     pub id: i32,
     pub name: String,

@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use crate::distances_user;
 use crate::distances_item;
 use crate::distances_user::Distance;
@@ -173,7 +175,7 @@ pub fn knn_prediction(k: i32, idx: Option<String>, idy: Option<String>, userx: O
     }
 }
 
-pub fn distance_item_by_id(idx:String, idy:String) {
+pub fn distance_item_by_id(idx: &str, idy: &str) {
     let controller = MovieController::new();
 
     let all_scores = controller.get_all_scores();    
@@ -191,7 +193,7 @@ pub fn distance_item_by_id(idx:String, idy:String) {
     println!("Item id({x}) and item id({y}) is: {distance}\n", x = idx, y = idy, distance = distance);
 }
 
-pub fn distance_item_by_name(namex:String, namey:String) {
+pub fn distance_item_by_name(namex: &str, namey: &str) {
     let controller = MovieController::new();
 
     let all_scores = controller.get_all_scores();    
@@ -210,3 +212,49 @@ pub fn distance_item_by_name(namex:String, namey:String) {
 }
 
 
+pub fn matrix_adjusted_cosine() -> (HashMap<String, usize>,Vec<Vec<f64>>){
+    let controller = MovieController::new();
+
+    let all_scores = controller.get_all_scores();
+    let mut matrix = Vec::new();
+
+    let mut items = Vec::new();
+    let mut hash_item = HashMap::new();
+    let mut order = HashMap::new();
+
+    let mut it = 0;
+    for (user, scores) in &all_scores {
+        for (item, score) in scores {
+            if !hash_item.contains_key(&item) {
+                let item_name = controller.get_item_by_id(*item);
+                items.push(item_name[0].id);
+                hash_item.insert(item, item_name[0].name.clone());
+                order.insert(item_name[0].name.clone(), it);
+                it += 1;
+            }
+        }
+    }
+
+    for it in &items {
+        matrix.push(vec![f64::INFINITY; items.len()]);
+    }
+
+    for it in 0..items.len() {
+        for it2 in (it+1)..items.len() {
+            let idx = items[it];
+            let idy = items[it2];
+            let distance = distances_item::acosine_similarity_between(idx, idy, &all_scores);
+            matrix[it][it2] = distance; 
+        }
+    }
+
+    (order, matrix)
+}
+
+pub fn get_from_matrix(namex: &str, namey: &str, order: HashMap<String, usize>, matrix: Vec<Vec<f64>>) -> f64{
+    let x = *order.get(&String::from(namex)).unwrap();
+    let y = *order.get(&String::from(namey)).unwrap();
+    let distance = matrix[x][y].min(matrix[y][x]);
+    println!("{} {} {}", namex, namey, distance);
+    distance
+}

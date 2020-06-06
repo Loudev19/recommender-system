@@ -4,10 +4,10 @@ pub mod movie_api;
 pub mod book_api;
 pub mod small_movielens_api;
 
-use std::collections::HashMap;
+//use std::collections::HashMap;
 
 fn main() {
-
+/*
     let mut scores = HashMap::new();
     let mut item1 = HashMap::new();
     item1.insert(2, 3.0);
@@ -42,5 +42,21 @@ fn main() {
     scores.insert(5, item5);
     
     let result = distances_item::acosine_similarity_between(1, 2, &scores);
-    println!("{}", result);
+    println!("{}", result);*/
+
+    //movie_api::distance_item_by_name("Alien", "Avatar");
+    /*
+    let (order, matrix) = movie_api::matrix_adjusted_cosine();
+    movie_api::get_from_matrix("Pulp Fiction", "Toy Story", order.clone(), matrix.clone());
+    movie_api::get_from_matrix("Star Wars", "Jaws", order.clone(), matrix.clone());
+    movie_api::get_from_matrix("Alien", "Avatar", order.clone(), matrix.clone());
+    movie_api::get_from_matrix("Braveheart", "The Happening", order.clone(), matrix.clone());*/
+
+    //small_movielens_api::distance_item_by_name("Toy Story (1995)", "Jumanji (1995)");
+    let (order, matrix) = small_movielens_api::matrix_adjusted_cosine();
+    small_movielens_api::get_from_matrix("Sabrina (1995)", "Casino (1995)", order.clone(), matrix.clone());
+    small_movielens_api::get_from_matrix("Dangerous Minds (1995)", "Friday (1995)", order.clone(), matrix.clone());
+    small_movielens_api::get_from_matrix("Iron Will (1994)", "Spider-Man (2002)", order.clone(), matrix.clone());
+    small_movielens_api::get_from_matrix("Micmacs (Micmacs à tire-larigot) (2009)", "Room, The (2003)", order.clone(), matrix.clone());
+    //no usuarios en comun en Micmacs y Room
 }

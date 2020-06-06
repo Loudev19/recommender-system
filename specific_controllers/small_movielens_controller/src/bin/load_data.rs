@@ -74,13 +74,13 @@ fn main() {
     println!("Start insert users");
 
     for chunk in vector_users.chunks(10000) {
-        diesel::insert_into(users::table).values(chunk).execute(&connector).expect("Failed insertion of users chunk");
+        //diesel::insert_into(users::table).values(chunk).execute(&connector).expect("Failed insertion of users chunk");
     }
 
     println!("Start inserting movies");
 
     for chunk in vector_movies.chunks(10000) {
-        diesel::insert_into(movies::table).values(chunk).execute(&connector).expect("Error inserting books");
+        //diesel::insert_into(movies::table).values(chunk).execute(&connector).expect("Error inserting books");
     }
 
     println!("Start inserting scores {}", vector_scores.len());

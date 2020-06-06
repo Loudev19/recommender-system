@@ -1,4 +1,8 @@
+use std::collections::HashMap;
+use std::collections::HashSet;
+
 use crate::distances_user;
+use crate::distances_item;
 use crate::distances_user::Distance;
 
 use generic_controller::{GenericController, User};
@@ -116,3 +120,107 @@ pub fn knn_prediction(k: i32, idx: String, idy: Option<String>, itemy: Option<St
     }
 }
 
+pub fn distance_item_by_id(idx: &str, idy: &str) {
+    let controller = SmallMovielensController::new();
+
+    let all_scores = controller.get_all_scores();    
+
+    let idx = idx.parse().expect("Error parsing item id");
+    let idy = idy.parse().expect("Error parsing item id");
+
+    if controller.get_item_by_id(idx).is_empty() || controller.get_item_by_id(idy).is_empty(){
+        println!("One or both items are not found in the database");
+        return;
+    }
+
+    let distance = distances_item::acosine_similarity_between(idx, idy, &all_scores);
+    println!("Movie database, Adjusted Cosine Similarity between:");
+    println!("Item id({x}) and item id({y}) is: {distance}\n", x = idx, y = idy, distance = distance);
+}
+
+pub fn distance_item_by_name(namex: &str, namey: &str) {
+    let controller = SmallMovielensController::new();
+
+    let all_scores = controller.get_all_scores();    
+
+    if controller.get_item_by_name(&namex).is_empty() || controller.get_item_by_name(&namey).is_empty(){
+        println!("One or both items are not found in the database");
+        return;
+    }
+
+    let idx = controller.get_item_by_name(&namex)[0].id;
+    let idy = controller.get_item_by_name(&namey)[0].id;
+
+    let distance = distances_item::acosine_similarity_between(idx, idy, &all_scores);
+    println!("Movie database, Adjusted Cosine Similarity between:");
+    println!("Item name({x}) and item name({y}) is: {distance}\n", x = namex, y = namey, distance = distance);
+}
+
+
+pub fn matrix_adjusted_cosine() -> (HashMap<String, usize>,Vec<Vec<f64>>){
+    let controller = SmallMovielensController::new();
+
+    let mut items = Vec::new();
+    let mut hash_item = HashMap::new();
+
+    let all_scores = controller.get_all_scores();
+    let mut matrix = Vec::new();
+    let mut order = HashMap::new();
+
+    let mut remainders = HashMap::new();
+
+    let mut it = 0;
+    for (user, scores) in all_scores {
+        let sum:f64 = scores.values().sum();
+        let mean = sum/scores.len() as f64;
+        
+        remainders.insert(user, HashMap::new());
+
+        for (item, score) in scores {
+            if !hash_item.contains_key(&item) {
+                let item_name = controller.get_item_by_id(item);
+                items.push(item);
+                hash_item.insert(item, HashSet::new());
+                order.insert(item_name[0].name.clone(), it);
+                it += 1;
+            }
+            let rem = score - mean;
+            hash_item.get_mut(&item).unwrap().insert(user);
+            remainders.get_mut(&user).unwrap().insert(item, rem);
+        }
+    }
+    
+    for _it in &items {
+        matrix.push(vec![f64::INFINITY; items.len()]);
+    }
+
+    for it in 0..items.len() {
+        for it2 in it+1..items.len() {
+            let mut numerator = 0.0;
+            let mut denominator1 = 0.0;
+            let mut denominator2 = 0.0;
+
+            let idx = items[it];
+            let idy = items[it2];
+            let users_int = hash_item[&idx].intersection(&hash_item[&idy]);
+            for user in users_int {
+                let remx = remainders[user][&idx];
+                let remy = remainders[user][&idy];
+                numerator += remx * remy;
+                denominator1 += remx.powi(2);
+                denominator2 += remy.powi(2);
+            }
+            matrix[it][it2] = numerator/(denominator1.sqrt()*denominator2.sqrt()); 
+        }
+    }
+
+    (order, matrix)
+}
+
+pub fn get_from_matrix(namex: &str, namey: &str, order: HashMap<String, usize>, matrix: Vec<Vec<f64>>) -> f64{
+    let x = *order.get(&String::from(namex)).unwrap();
+    let y = *order.get(&String::from(namey)).unwrap();
+    let distance = matrix[x][y].min(matrix[y][x]);
+    println!("{} {} {}", namex, namey, distance);
+    distance
+}
